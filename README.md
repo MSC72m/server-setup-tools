@@ -40,7 +40,7 @@ With a single command, you can launch an interactive setup that will:
 Connect to your server via SSH. Then, run the following command. It will download the setup files and start the interactive installation guide.
 
 ```bash
-sudo bash <(curl -sL https://raw.githubusercontent.com/MSC72m/vpn-setup-tools/main/bootstrap.sh)
+curl -sL https://raw.githubusercontent.com/MSC72m/vpn-setup-tools/main/bootstrap.sh | sudo bash
 ```
 
 This command downloads a bootstrap script and executes it. The script will:

@@ -4,7 +4,7 @@
 #  Bootstrap Script for Server Setup
 # =================================================================
 #  This script should be run via curl with sudo:
-#  sudo bash <(curl -sL https://raw.githubusercontent.com/MSC72m/vpn-setup-tools/main/bootstrap.sh)
+#  curl -sL https://raw.githubusercontent.com/MSC72m/vpn-setup-tools/main/bootstrap.sh | sudo bash
 #
 #  It performs the following actions:
 #  1. Checks for root access.
@@ -36,7 +36,7 @@ print_header "Starting Server Setup Bootstrap"
 if [ "$EUID" -ne 0 ]; then
     echo "❌ This script must be run with root privileges."
     echo "Please run it again using 'sudo':"
-    echo "   sudo bash <(curl -sL https://raw.githubusercontent.com/MSC72m/vpn-setup-tools/main/bootstrap.sh)"
+    echo "   curl -sL https://raw.githubusercontent.com/MSC72m/vpn-setup-tools/main/bootstrap.sh | sudo bash"
     exit 1
 fi
 
