@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  brook-vpn:
+    image: teddysun/brook
+    container_name: brook-vpn
+    restart: unless-stopped
+    command: ["brook", "server", "-l", ":${BROOK_VPN_PORT}", "-p", "${BROOK_PASSWORD}"]
+    network_mode: host
+    volumes:
+      - brook-data:/data
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "${BROOK_VPN_PORT}"]
+      interval: 120s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - vpn
+
+  brook-socks5:
+    image: teddysun/brook
+    container_name: brook-socks5
+    restart: unless-stopped
+    command: ["brook", "socks5", "--listen", "${SERVER_IP}:${BROOK_SOCKS5_PORT}", "--username", "${BROOK_SOCKS5_USER}", "--password", "${BROOK_PASSWORD}"]
+    network_mode: host
+    volumes:
+      - brook-data:/data
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "${BROOK_SOCKS5_PORT}"]
+      interval: 120s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - socks5
+
+  brook-wss:
+    image: teddysun/brook
+    container_name: brook-wss
+    restart: unless-stopped
+    command: ["brook", "wssserver", "--domainaddress", "${DOMAIN}:${BROOK_WSS_PORT}", "--path", "/ws", "--cert", "/etc/brook-ssl/fullchain.pem", "--certkey", "/etc/brook-ssl/privkey.pem", "--password", "${BROOK_PASSWORD}"]
+    network_mode: host
+    volumes:
+      - brook-data:/data
+      - ${SSL_DIR}/fullchain.pem:/etc/brook-ssl/fullchain.pem:ro
+      - ${SSL_DIR}/privkey.pem:/etc/brook-ssl/privkey.pem:ro
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "${BROOK_WSS_PORT}"]
+      interval: 120s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - wss
+
+volumes:
+  brook-data: 
