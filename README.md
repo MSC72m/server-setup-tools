@@ -60,7 +60,16 @@ This will start an interactive guide that will ask you which setup modules you w
 The setup process is divided into several scripts. The main `setup.sh` script will orchestrate running them, but you can also run them individually if you are an advanced user. They should be run in the order listed below.
 
 ### 1. `setup-secure-ssh.sh`
-**What it does:** This is the most critical script for securing your server. It hardens your SSH configuration, creates a new administrative user (with `sudo`), disables direct `root` login, and can create additional restricted users intended only for VPN/tunneling access. It also configures the UFW firewall and installs `fail2ban` to prevent brute-force attacks.
+**What it does:** This is the most critical script for securing your server. It hardens your SSH configuration, creates users with different privilege levels, disables direct `root` login, and configures the UFW firewall and `fail2ban` to prevent brute-force attacks.
+
+**Key Features:**
+- **User Accounts:** You'll be prompted to create one or more users.
+    - The **first user** is an **admin user** with full shell access and `sudo` privileges. This user is for managing the server.
+    - All **subsequent users** are **restricted users** intended only for SSH tunneling or VPN access. They are assigned a restricted shell (`rbash`) and have no `sudo` rights.
+- **Password Generation:** You will provide a single base password during the setup. The script then generates a unique password for each user by appending **5 random alphanumeric characters** to your base password. You must save these generated passwords.
+- **SSH Hardening:** It changes the default SSH port to one you specify and disables root login.
+- **Firewall & Security:** It configures the UFW firewall to only allow the new SSH port and other necessary service ports. It also installs and configures `fail2ban` to block IPs that attempt too many failed logins.
+
 **How to run it:**
 ```bash
 sudo ./setup-secure-ssh.sh
@@ -68,7 +77,13 @@ sudo ./setup-secure-ssh.sh
 > **Note:** This script is run first by the main `setup.sh` orchestrator.
 
 ### 2. `setup-ssl.sh`
-**What it does:** This script obtains a free SSL certificate from Let's Encrypt. You will need a domain name that correctly points to your server's IP address. This certificate is required if you want to use the stealthy WSS (WebSocket Secure) VPN service. It also configures a cron job to handle automatic renewal.
+**What it does:** This script obtains a free SSL certificate from Let's Encrypt for a domain name you provide. This is required if you want to use the stealthy WSS (WebSocket Secure) VPN service.
+
+**Key Features:**
+- **Domain Verification:** The script requires a domain name that correctly points to your server's public IP address. It will automatically detect your server's IP and verify the domain's DNS `A` record before proceeding.
+- **Certificate Acquisition:** It uses `certbot` in `--standalone` mode. This means it will temporarily start a webserver on **port 80** to prove ownership of the domain to Let's Encrypt. The script checks if port 80 is available and will temporarily open it in the UFW firewall.
+- **Automatic Renewal:** It configures a `cron` job to automatically renew the SSL certificate before it expires, ensuring your services remain secure.
+
 **How to run it:**
 ```bash
 sudo ./setup-ssl.sh
@@ -76,7 +91,17 @@ sudo ./setup-ssl.sh
 > **Note:** This should be run after securing your server but before setting up the Brook VPN services if you need WSS.
 
 ### 3. `setup-brook.sh`
-**What it does:** This script configures and deploys the Brook VPN services (standard VPN, SOCKS5 proxy, and WSS). It uses Docker and Docker Compose to run the services in isolated containers, based on the `docker-compose.yml` file and the configuration you provide.
+**What it does:** This script interactively configures and deploys one or more Brook VPN services in isolated Docker containers. It will install Docker and Docker Compose if they are not already present.
+
+**Key Features:**
+- **Service Selection:** You can choose to install any combination of the following services:
+    - **Brook VPN Server:** A standard, fast VPN server.
+    - **SOCKS5 Proxy:** A versatile proxy server with username/password authentication. It's excellent for development, testing, or bypassing geo-restrictions.
+    - **WSS (WebSocket Secure) Server:** A stealthy VPN that masks traffic as regular HTTPS, making it difficult to detect and block. This option requires a domain name and an SSL certificate (which can be obtained using `setup-ssl.sh`).
+- **Interactive Configuration:** The script will guide you through configuring ports, a master password for the Brook services, a username for the SOCKS5 proxy, and the domain for WSS.
+- **Dockerized Deployment:** All services run in separate Docker containers, managed by a `docker-compose.yml` file. This improves security and makes management easy.
+- **Firewall Integration:** It automatically configures the UFW firewall to allow traffic on the ports you select for the enabled services.
+
 **How to run it:**
 ```bash
 sudo ./setup-brook.sh
@@ -84,7 +109,7 @@ sudo ./setup-brook.sh
 > **Note:** This is the final step and should be run after the server is secured and you have an SSL certificate (if needed).
 
 ### `setup.sh` (Main Orchestrator)
-This is the main script that provides an interactive menu to run the other scripts in the correct order. It's the recommended way to use this project.
+This is the main script that provides an interactive menu to run the other scripts in the correct order. It's the recommended way to use this project, as it ensures dependencies are met and each step is run correctly.
 
 ## ⚠️ Disclaimer
 
