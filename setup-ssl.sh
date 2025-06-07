@@ -1,4 +1,15 @@
 #!/bin/bash
+#
+# =================================================================
+#  SSL Certificate Setup Script (Let's Encrypt)
+# =================================================================
+#  This script is called from the main setup script.
+#  It handles:
+#  - Installing certbot.
+#  - Verifying domain ownership.
+#  - Obtaining an SSL certificate from Let's Encrypt.
+#  - Setting up automatic renewal.
+# =================================================================
 
 # Exit on any error
 set -e

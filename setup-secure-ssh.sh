@@ -1,4 +1,17 @@
 #!/bin/bash
+#
+# =================================================================
+#  Secure SSH and User Setup Script
+# =================================================================
+#  This script is designed to be called from the main setup script.
+#  It handles:
+#  - Changing the SSH port.
+#  - Creating an admin user with sudo privileges.
+#  - Disabling root login.
+#  - Creating restricted users for SSH tunneling.
+#  - Setting up UFW (firewall).
+#  - Installing and configuring fail2ban.
+# =================================================================
 
 # Exit on any error
 set -e

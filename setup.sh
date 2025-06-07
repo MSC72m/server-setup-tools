@@ -27,104 +27,85 @@ print_header() {
     echo ""
 }
 
+# Function to print the welcome message
+print_welcome_message() {
+    print_header "Welcome to the All-in-One Server Setup"
+    echo "This script will help you configure your server by running a series of specialized scripts."
+    echo "You will be asked if you want to run each setup step."
+    echo ""
+    echo "The available setup modules are:"
+    echo "  1. 🔒 Secure SSH: Harden SSH, create users, set up firewall."
+    echo "  2. 📜 SSL Certificate: Get a free Let's Encrypt SSL certificate for a domain."
+    echo "  3. 🚀 Brook VPN: Install a multi-protocol VPN server using Docker."
+}
+
 # Check for root privileges at the start
 check_root
 
 # --- Welcome Message ---
-print_header "Welcome to the All-in-One Server Setup"
-echo "This script will help you configure your server by running a series of specialized scripts."
-echo "You will be asked if you want to run each setup step."
-echo ""
-echo "The available setup modules are:"
-echo "  1. 🔒 Secure SSH: Harden SSH, create users, set up firewall."
-echo "  2. 📜 SSL Certificate: Get a free Let's Encrypt SSL certificate for a domain."
-echo "  3. 🚀 Brook VPN: Install a multi-protocol VPN server using Docker."
-echo ""
-read -p "Press Enter to begin the setup..."
+print_welcome_message
 
-# --- Module 1: Secure SSH ---
+# --- Helper to Ask User to Start ---
+# Pause and wait for the user to press Enter to start the process.
+wait_for_user_to_start() {
+    print_header "Ready to Begin"
+    echo "The setup is ready to start."
+    read -p "Press Enter to begin the setup..." < /dev/tty
+}
+
+# --- Reusable Prompt ---
+# A reusable function to ask the user if they want to run a setup module.
+prompt_to_run() {
+    local question=$1
+    local choice_var=$2
+    while true; do
+        read -p "$question (y/n): " choice < /dev/tty
+        case "$choice" in
+            [Yy]* ) eval "$choice_var='y'"; break;;
+            [Nn]* ) eval "$choice_var='n'"; break;;
+            * ) echo "Invalid input. Please answer y (yes) or n (no).";;
+        esac
+    done
+}
+
+# --- Main Logic ---
+# Clear the screen for a clean start
+clear
+print_welcome_message
+
+wait_for_user_to_start
+
+# --- 1. Secure SSH ---
 print_header "Module 1: Secure SSH Setup"
 echo "This module will secure your server's SSH access."
 echo "It is highly recommended for any new server."
 echo ""
-while true; do
-    read -p "Do you want to run the Secure SSH setup now? (y/n): " choice
-    case $choice in
-        [Yy]*)
-            echo "🚀 Starting Secure SSH setup..."
-            if [ -f ./setup-secure-ssh.sh ]; then
-                bash ./setup-secure-ssh.sh
-                echo "✅ Secure SSH setup finished."
-            else
-                echo "❌ Error: setup-secure-ssh.sh not found!"
-            fi
-            break
-            ;;
-        [Nn]*)
-            echo "Skipping Secure SSH setup."
-            break
-            ;;
-        *)
-            echo "Invalid input. Please answer y (yes) or n (no)."
-            ;;
-    esac
-done
+prompt_to_run "Do you want to run the Secure SSH setup now?" RUN_SSH_SETUP
+if [[ "$RUN_SSH_SETUP" == "y" ]]; then
+    ./setup-secure-ssh.sh
+fi
 
-# --- Module 2: SSL Certificate ---
+# --- 2. SSL Certificate ---
 print_header "Module 2: SSL Certificate Setup"
-echo "This module will obtain a free SSL certificate from Let's Encrypt."
-echo "This is required if you plan to use the Brook WSS (WebSocket Secure) VPN service."
+echo "This module gets a free SSL certificate from Let's Encrypt."
+echo "This is required for the WSS (stealth) VPN service."
 echo ""
-while true; do
-    read -p "Do you want to run the SSL Certificate setup now? (y/n): " choice
-    case $choice in
-        [Yy]*)
-            echo "🚀 Starting SSL Certificate setup..."
-            if [ -f ./setup-ssl.sh ]; then
-                bash ./setup-ssl.sh
-                echo "✅ SSL Certificate setup finished."
-            else
-                echo "❌ Error: setup-ssl.sh not found!"
-            fi
-            break
-            ;;
-        [Nn]*)
-            echo "Skipping SSL Certificate setup."
-            break
-            ;;
-        *)
-            echo "Invalid input. Please answer y (yes) or n (no)."
-            ;;
-    esac
-done
+prompt_to_run "Do you want to run the SSL Certificate setup now?" RUN_SSL_SETUP
+if [[ "$RUN_SSL_SETUP" == "y" ]]; then
+    ./setup-ssl.sh
+fi
 
-# --- Module 3: Brook VPN ---
+# --- 3. Brook VPN ---
 print_header "Module 3: Brook VPN Setup"
-echo "This module will install and configure the Brook VPN services using Docker."
-echo "You can choose which VPN protocols (VPN, SOCKS5, WSS) to enable."
+echo "This module installs Brook VPN services using Docker."
+echo "You can choose which services (VPN, SOCKS5, WSS) to enable."
 echo ""
-while true; do
-    read -p "Do you want to run the Brook VPN setup now? (y/n): " choice
-    case $choice in
-        [Yy]*)
-            echo "🚀 Starting Brook VPN setup..."
-            if [ -f ./setup-brook.sh ] && [ -f ./docker-compose.yml ]; then
-                bash ./setup-brook.sh
-                echo "✅ Brook VPN setup finished."
-            else
-                echo "❌ Error: setup-brook.sh or docker-compose.yml not found!"
-            fi
-            break
-            ;;
-        [Nn]*)
-            echo "Skipping Brook VPN setup."
-            break
-            ;;
-        *)
-            echo "Invalid input. Please answer y (yes) or n (no)."
-            ;;
-    esac
-done
+prompt_to_run "Do you want to run the Brook VPN setup now?" RUN_BROOK_SETUP
+if [[ "$RUN_BROOK_SETUP" == "y" ]]; then
+    ./setup-brook.sh
+fi
+
+print_header "🎉 All Done!"
 
 # --- Final Message ---
 print_header "Setup Process Finished"
