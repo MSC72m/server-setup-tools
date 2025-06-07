@@ -111,9 +111,22 @@ sudo ./setup-brook.sh
 ### `setup.sh` (Main Orchestrator)
 This is the main script that provides an interactive menu to run the other scripts in the correct order. It's the recommended way to use this project, as it ensures dependencies are met and each step is run correctly.
 
-## ⚠️ Disclaimer
+## ⚠️ Disclaimer and Limitation of Liability
 
-These scripts are provided as-is. While they are designed to improve security, always be careful when running scripts with root privileges on your server. It's recommended to understand what the scripts do before running them.
+These scripts are provided "AS IS", without warranty of any kind, express or implied.
+
+**You, the user, assume all risks and responsibilities for the use of these scripts.**
+
+By using this software, you agree that the author (`MSC72m`) is not liable for any damages, losses, or consequences arising from your use or misuse of these scripts. This includes, but is not limited to:
+- Server damage, data loss, or security breaches.
+- Getting locked out of your own server.
+- Any illegal or unauthorized activities you perform using the server or VPN.
+
+The author is not responsible for what you do with this software. The responsibility is entirely yours. It is strongly recommended to understand what the scripts do before running them.
+
+## 📜 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
 Happy tunneling! 
