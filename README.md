@@ -17,6 +17,15 @@ This setup will help you:
   - Sets up `fail2ban` to protect against brute-force attacks.
   - Configures a firewall (UFW) to allow only necessary ports.
 
+- **Network Optimization:**
+  - Enables BBR (Bottleneck Bandwidth and RTT) congestion control.
+  - Optimizes TCP parameters for better performance.
+  - Improves throughput and reduces latency for:
+    - SSH tunneling
+    - Brook VPN services
+    - General network connections
+  - Docker container support for BBR.
+
 - **Brook VPN Services:**
   - **Brook VPN Server:** A standard, fast VPN server.
   - **SOCKS5 Proxy:** A versatile proxy server with username/password authentication.
@@ -54,6 +63,18 @@ chmod +x *.sh
 sudo ./setup.sh
 ```
 This will start an interactive guide that will ask you which setup modules you want to run.
+
+### 3. System Restart
+After completing the setup, a system restart is required:
+```bash
+sudo reboot
+```
+
+**Important Notes About Restart:**
+- All Brook VPN services will automatically start after reboot
+- BBR and network optimizations will be fully active
+- SSH will be available on the configured port
+- No manual intervention is needed after restart
 
 ## 📁 The Scripts
 
@@ -107,6 +128,29 @@ sudo ./setup-ssl.sh
 sudo ./setup-brook.sh
 ```
 > **Note:** This is the final step and should be run after the server is secured and you have an SSL certificate (if needed).
+
+### 4. `setup-bbr.sh`
+**What it does:** This script enables and optimizes BBR congestion control and network parameters for better performance, especially for VPN and SSH tunneling.
+
+**Key Features:**
+- **BBR Enablement:** Enables Google's BBR congestion control algorithm, which can significantly improve throughput and reduce latency.
+- **Network Optimization:** Configures various TCP parameters for optimal performance:
+  - Increased buffer sizes for better throughput
+  - Optimized TCP window sizes
+  - Improved connection handling
+  - Better keepalive settings
+- **Docker Integration:** Verifies that Docker containers can use BBR and provides appropriate warnings if they cannot.
+- **Performance Benefits:**
+  - Faster SSH tunneling speeds
+  - Improved Brook VPN performance
+  - Better overall network responsiveness
+  - Reduced latency in congested networks
+
+**How to run it:**
+```bash
+sudo ./setup-bbr.sh
+```
+> **Note:** A system reboot is required after running this script for all changes to take full effect. The Brook VPN services will automatically restart after the reboot.
 
 ### `setup.sh` (Main Orchestrator)
 This is the main script that provides an interactive menu to run the other scripts in the correct order. It's the recommended way to use this project, as it ensures dependencies are met and each step is run correctly.

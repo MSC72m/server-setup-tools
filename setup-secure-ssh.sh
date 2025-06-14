@@ -134,14 +134,20 @@ remove_existing_users() {
 # Function to get valid port number
 get_valid_port() {
     local port
-    while true; do
-        read -p "Enter SSH port number (1024-65535): " port
-        if [[ "$port" =~ ^[0-9]+$ ]] && [ "$port" -ge 1024 ] && [ "$port" -le 65535 ]; then
-            echo "$port"
-            return 0
-        fi
-        echo "Invalid port number. Please enter a number between 1024 and 65535."
-    done
+    read -p "Do you want to change the default SSH port? (y/n): " change_port
+    if [[ "$change_port" =~ ^[Yy]$ ]]; then
+        while true; do
+            read -p "Enter SSH port number (1024-65535): " port
+            if [[ "$port" =~ ^[0-9]+$ ]] && [ "$port" -ge 1024 ] && [ "$port" -le 65535 ]; then
+                echo "$port"
+                return 0
+            fi
+            echo "Invalid port number. Please enter a number between 1024 and 65535."
+        done
+    else
+        echo "22"  # Default SSH port
+        return 0
+    fi
 }
 
 # Function to get valid username
@@ -155,6 +161,19 @@ get_valid_username() {
         fi
         echo "Invalid username. Use 3-32 characters, only letters, numbers, and underscores."
     done
+}
+
+# Function to get password preference
+get_password_preference() {
+    local username=$1
+    local base_password=$2
+    read -p "Do you want to add random characters to the base password for $username? (y/n): " add_random
+    if [[ "$add_random" =~ ^[Yy]$ ]]; then
+        RANDOM_STRING=$(generate_random_string)
+        echo "${base_password}${RANDOM_STRING}"
+    else
+        echo "$base_password"
+    fi
 }
 
 # Check if running as root
@@ -238,8 +257,16 @@ ufw --force reset
 ufw default deny incoming
 ufw default allow outgoing
 
-# Allow only new SSH port and required ports
-ufw allow $SSH_PORT/tcp          # New SSH port
+# If changing SSH port, first allow both old and new ports
+if [ "$SSH_PORT" != "22" ]; then
+    echo "Adding both old and new SSH ports to UFW..."
+    ufw allow 22/tcp          # Keep old port open temporarily
+    ufw allow $SSH_PORT/tcp   # Add new port
+else
+    ufw allow 22/tcp          # Default SSH port
+fi
+
+# Allow other required ports
 ufw allow 9999/tcp               # Your specified port
 ufw allow 7799/tcp               # Brook VPN port
 ufw allow 443/tcp                # HTTPS
@@ -257,9 +284,8 @@ for i in "${!NEW_USERS[@]}"; do
     echo "Creating user $user..."
     useradd -m -s /bin/bash "$user"
     
-    # Generate password: root password + 5 random characters
-    RANDOM_STRING=$(generate_random_string)
-    PASSWORD="${ROOT_PASSWORD}${RANDOM_STRING}"
+    # Get password based on user preference
+    PASSWORD=$(get_password_preference "$user" "$ROOT_PASSWORD")
     
     # Set the password
     echo "$user:$PASSWORD" | chpasswd
@@ -427,6 +453,27 @@ if ! verify_port_listening $SSH_PORT; then
     cp $SSH_BACKUP $SSH_CONFIG
     systemctl restart ssh
     exit 1
+fi
+
+# If we changed the SSH port, wait for confirmation before removing old port
+if [ "$SSH_PORT" != "22" ]; then
+    echo "================================================"
+    echo "⚠️  IMPORTANT: SSH port change in progress"
+    echo "================================================"
+    echo "1. Both ports 22 and $SSH_PORT are currently open"
+    echo "2. Please test the new port ($SSH_PORT) in a new terminal"
+    echo "3. Once confirmed working, we can remove port 22"
+    echo ""
+    read -p "Is the new SSH port working correctly? (y/n): " port_working
+    
+    if [[ "$port_working" =~ ^[Yy]$ ]]; then
+        echo "Removing old SSH port (22) from UFW..."
+        ufw delete allow 22/tcp
+        echo "✅ Old SSH port removed successfully"
+    else
+        echo "❌ Port change not confirmed. Keeping both ports open for safety."
+        echo "You can manually remove port 22 later using: ufw delete allow 22/tcp"
+    fi
 fi
 
 # Print important information

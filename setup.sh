@@ -37,6 +37,7 @@ print_welcome_message() {
     echo "  1. 🔒 Secure SSH: Harden SSH, create users, set up firewall."
     echo "  2. 📜 SSL Certificate: Get a free Let's Encrypt SSL certificate for a domain."
     echo "  3. 🚀 Brook VPN: Install a multi-protocol VPN server using Docker."
+    echo "  4. 🚄 BBR Optimization: Enable BBR for better network performance."
 }
 
 # Check for root privileges at the start
@@ -105,6 +106,16 @@ if [[ "$RUN_BROOK_SETUP" == "y" ]]; then
     ./setup-brook.sh
 fi
 
+# --- 4. BBR Optimization ---
+print_header "Module 4: BBR Network Optimization"
+echo "This module enables BBR congestion control and optimizes network parameters."
+echo "This will improve performance for SSH tunneling and VPN services."
+echo ""
+prompt_to_run "Do you want to run the BBR optimization setup now?" RUN_BBR_SETUP
+if [[ "$RUN_BBR_SETUP" == "y" ]]; then
+    ./setup-bbr.sh
+fi
+
 print_header "🎉 All Done!"
 
 # --- Final Message ---
@@ -113,4 +124,19 @@ echo "All selected setup modules have been executed."
 echo "Please review the output from each script for important information, such as usernames, passwords, and ports."
 echo ""
 echo "✅ Your server setup is complete!"
-echo "" 
+echo ""
+echo "⚠️  IMPORTANT: System Restart Required"
+echo "================================================"
+echo "A system restart is required for all changes to take effect:"
+echo "1. BBR optimization will be fully active"
+echo "2. Network optimizations will be applied"
+echo "3. Brook VPN services will automatically restart"
+echo ""
+echo "To restart your server, run:"
+echo "   sudo reboot"
+echo ""
+echo "After restart:"
+echo "- All Brook VPN services will start automatically"
+echo "- SSH will be available on the configured port"
+echo "- BBR and network optimizations will be active"
+echo "================================================" 
