@@ -88,7 +88,7 @@ verify_docker_bbr() {
     if ! command -v docker &> /dev/null; then
         echo "⚠️ Docker not found. Skipping Docker verification."
         return
-    }
+    fi
     
     # Create a test container to verify BBR
     echo "Testing BBR with Docker..."
