@@ -2,7 +2,6 @@ package installer
 
 import (
 	"context"
-	"errors"
 	"os/exec"
 	"time"
 )
@@ -15,7 +14,7 @@ func Install_Marzban() error {
 	
 	_, err := cmd.CombinedOutput()
 	if err != nil {
-		return errors.New("marzban install error") 
+		return err 
 	}
 
 	return nil
