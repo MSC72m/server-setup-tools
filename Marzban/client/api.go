@@ -3,11 +3,9 @@ package client
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -15,7 +13,7 @@ import (
 )
 
 type Marzban interface {
-	CreateMarzbanUser(userID string, dataLimit int, dateLimit string) (Response, error)
+	CreateMarzbanUser(username string) (Response, error)
 }
 
 type marzban struct{}
@@ -24,9 +22,7 @@ func NewMarzbanClient() Marzban {
 	return &marzban{}
 }
 
-func (m *marzban) CreateMarzbanUser(username string, dataLimit int, dateLimit string) (Response, error) {
-	expireTime := fmt.Sprint(CreateTime(dateLimit))
-	limit := strconv.Itoa(GenerateData(dataLimit))
+func (m *marzban) CreateMarzbanUser(username string) (Response, error) {
 	var resp *http.Response
 	var response Response
 
@@ -40,8 +36,8 @@ func (m *marzban) CreateMarzbanUser(username string, dataLimit int, dateLimit st
 	  "proxies": {
 	    "vless": ""
 	  },
-	  "expire": ` + expireTime + `,
-	  "data_limit": ` + limit + `,
+	  "expire": 0,
+	  "data_limit": 0,
 	  "data_limit_reset_strategy": "no_reset",
 	  "status": "active",
 	  "note": "",
